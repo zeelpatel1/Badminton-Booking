@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  name      String
+  email     String @unique
+  password  String
+  phone     String
+  role      Role   @default(USER)
+
+  courtBookings     CourtBooking[]
+  equipmentBookings EquipmentBooking[]
+  coachBookings     CoachBooking[]
+}
+
+model Court {
+  id       Int       @id @default(autoincrement())
+  name     String
+  type     CourtType
+
+  bookings CourtBooking[]
+}
+
+model CourtBooking {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  courtId   Int
+  court     Court    @relation(fields: [courtId], references: [id])
+
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+
+  status    BookingStatus @default(CONFIRMED)
+}
+
+model Equipment {
+  id       Int    @id @default(autoincrement())
+  name     String
+  totalQty Int
+
+  bookings EquipmentBooking[]
+}
+
+model EquipmentBooking {
+  id          Int      @id @default(autoincrement())
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+
+  equipmentId Int
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  quantity    Int
+  startTime   DateTime
+  endTime     DateTime
+}
+
+model Coach {
+  id             Int           @id @default(autoincrement())
+  name           String
+  specialties    SkillLevel[]
+
+  availabilities Availability[]
+  bookings       CoachBooking[]
+}
+
+model Availability {
+  id        Int      @id @default(autoincrement())
+
+  coachId   Int
+  coach     Coach    @relation(fields: [coachId], references: [id])
+
+  day       WeekDay
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+
+  isBooked  Boolean  @default(false)
+
+  coachBookings CoachBooking[]
+}
+
+model CoachBooking {
+  id              Int      @id @default(autoincrement())
+
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+
+  coachId         Int
+  coach           Coach    @relation(fields: [coachId], references: [id])
+
+  availabilityId  Int      @unique
+  availability Availability @relation(fields: [availabilityId], references: [id])
+
+  skillLevel      SkillLevel
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourtType {
+  INDOOR
+  OUTDOOR
+}
+
+enum WeekDay {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum Role {
+  USER
+  ADMIN
+}
