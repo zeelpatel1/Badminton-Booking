@@ -1,78 +1,101 @@
-"use client";
+"use client"
 
-import React from 'react'; 
-import { Grid2x2PlusIcon } from 'lucide-react';
-import { Sheet, SheetContent, SheetFooter } from '@/components/sheet';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { MenuToggle } from '@/components/menu-toggle';
-import Image from 'next/image';
+import React from "react"
+import Image from "next/image"
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs"
+
+import { Sheet, SheetContent, SheetFooter } from "@/components/sheet"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { MenuToggle } from "@/components/menu-toggle"
 
 export function SimpleHeader() {
-	const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
 
-	const links = [
-		{
-			label: 'WaitList',
-			href: '#',
-		},
-		{
-			label: 'My Booking',
-			href: '#',
-		},
-	];
+  const links = [
+    { label: "WaitList", href: "#" },
+    { label: "My Booking", href: "#" },
+  ]
 
-	return (
-		<header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-1/4 z-50 w-full border-b backdrop-blur-lg">
-			<nav className="mx-auto flex h-14 w-full max-w-4xl items-center justify-between px-4">
-				<div className="flex items-center gap-2">
-					<Image src={'/Shuttle.png'} height={50} width={50} className="rounded-full" alt=""></Image>
-					{/* <Grid2x2PlusIcon className="size-6" /> */}
-					<p className="font-mono text-lg font-bold">Shuttle Time</p>
-				</div>
-				<div className="hidden items-center gap-2 lg:flex">
-					{links.map((link) => (
-						<a
-							className={buttonVariants({ variant: 'ghost' })}
-							href={link.href}
-						>
-							{link.label}
-						</a>
-					))}
-					<Button variant="outline">Role</Button>
-				</div>
-				<Sheet open={open} onOpenChange={setOpen}>
-					<Button size="icon" variant="outline" className="lg:hidden">
-						<MenuToggle
-							strokeWidth={2.5}
-							open={open}
-							onOpenChange={setOpen}
-							className="size-6"
-						/>
-					</Button>
-					<SheetContent
-						className="bg-background/95 supports-[backdrop-filter]:bg-background/80 gap-0 backdrop-blur-lg"
-						showClose={false}
-						side="left"
-					>
-						<div className="grid gap-y-2 overflow-y-auto px-4 pt-12 pb-5">
-							{links.map((link) => (
-								<a
-									className={buttonVariants({
-										variant: 'ghost',
-										className: 'justify-start',
-									})}
-									href={link.href}
-								>
-									{link.label}
-								</a>
-							))}
-						</div>
-						<SheetFooter>
-							<Button>Logout</Button>
-						</SheetFooter>
-					</SheetContent>
-				</Sheet>
-			</nav>
-		</header>
-	);
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+        
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <Image
+            src="/Shuttle.png"
+            height={40}
+            width={40}
+            className="rounded-full"
+            alt="logo"
+          />
+          <p className="font-mono text-lg font-bold">Shuttle Time</p>
+        </div>
+
+        {/* Desktop */}
+        <div className="hidden items-center gap-2 lg:flex">
+          {links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className={buttonVariants({ variant: "ghost" })}
+            >
+              {link.label}
+            </a>
+          ))}
+
+          <SignedOut>
+            <SignInButton>
+              <Button>Login</Button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
+
+        {/* Mobile */}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <Button size="icon" variant="outline" className="lg:hidden">
+            <MenuToggle open={open} onOpenChange={setOpen} />
+          </Button>
+
+          <SheetContent side="left" showClose={false}>
+            <div className="grid gap-y-2 px-4 pt-12">
+              {links.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className={buttonVariants({
+                    variant: "ghost",
+                    className: "justify-start",
+                  })}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            <SheetFooter>
+              <SignedOut>
+                <SignInButton>
+                  <Button className="w-full">Login</Button>
+                </SignInButton>
+              </SignedOut>
+
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      </nav>
+    </header>
+  )
 }
