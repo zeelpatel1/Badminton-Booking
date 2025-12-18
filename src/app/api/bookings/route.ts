@@ -22,10 +22,7 @@ const bookingSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log(body);
     const parsed = bookingSchema.safeParse(body);
-
-    console.log("Booking payload:", parsed);
 
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -76,8 +73,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 3️⃣ Check coach availability
-    let coachReservationData = undefined;
-    if (coachId) {
+    let coachReservationData: { coachId: number; availabilityId: number } | undefined = undefined;
+    if (coachId != null) {
       const availability = await prisma.availability.findFirst({
         where: {
           coachId,
@@ -113,7 +110,7 @@ export async function POST(req: NextRequest) {
         if (eqItem) totalPrice += eqItem.price * eq.quantity;
       }
 
-      if (coachReservationData) {
+      if (coachReservationData && coachId != null) {
         const coach = await tx.coach.findUnique({ where: { id: coachId } });
         if (coach) totalPrice += coach.pricePerHour * durationHours;
       }
@@ -123,7 +120,15 @@ export async function POST(req: NextRequest) {
           userId,
           courtReservation: { create: { courtId } },
           equipmentReservations: { create: equipment.map((eq) => ({ equipmentId: eq.equipmentId, quantity: eq.quantity })) },
-          coachReservation: coachReservationData ? { create: coachReservationData } : undefined,
+          coachReservation: coachReservationData
+            ? {
+                create: {
+                  coachId: coachReservationData.coachId,
+                  availabilityId: coachReservationData.availabilityId,
+                  skillLevel: "BEGINNER" as "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
+                },
+              }
+            : undefined,
           date: start,
           startTime: start,
           endTime: end,
@@ -144,6 +149,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 400 });
   }
 }
+
+
 
 
 export async function GET(req: NextRequest) {

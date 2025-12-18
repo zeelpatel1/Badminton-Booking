@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({}, { status: 401 })
 
   const admin = await prisma.user.findUnique({

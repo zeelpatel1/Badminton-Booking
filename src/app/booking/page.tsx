@@ -121,41 +121,6 @@ export default function BookingFlow() {
     setConfirmationDialogOpen(true);
   };
 
-  const confirmBooking = async () => {
-    if (!selectedCourt || !selectedSlot || !date) return;
-
-    const bookingData = {
-      userId: dbUser.id,
-      courtId: selectedCourt.id,
-      date: date.toISOString().split("T")[0],
-      startTime: selectedSlot.start,
-      endTime: selectedSlot.end,
-      equipment: selectedEquipment.map(e => ({ equipmentId: e.id, quantity: 1 })),
-      coachId: selectedCoach?.id ?? null,
-    };
-
-    try {
-      const res = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bookingData) });
-      if (!res.ok) throw new Error("Booking failed");
-
-      alert("🎉 Booking Confirmed!");
-      setDate(undefined);
-      setSelectedCourt(null);
-      setSelectedSlot(null);
-      setSelectedEquipment([]);
-      setSelectedCoach(null);
-      setPrice(null);
-      setCourtDialogOpen(false);
-      setTimeDialogOpen(false);
-      setEquipmentDialogOpen(false);
-      setCoachDialogOpen(false);
-      setConfirmationDialogOpen(false);
-    } catch (err) {
-      console.error(err);
-      alert("Booking failed. Please try again.");
-    }
-  };
-
   // --- RENDER ---
   return (
     <>
@@ -165,7 +130,19 @@ export default function BookingFlow() {
       <TimeSlotDialog slots={slots} blockedSlots={blockedSlots} selectedSlot={selectedSlot} open={timeDialogOpen} onOpenChange={setTimeDialogOpen} onSelectSlot={setSelectedSlot} onContinue={proceedToEquipment} />
       <EquipmentDialog equipment={equipment} selectedEquipment={selectedEquipment} open={equipmentDialogOpen} onOpenChange={setEquipmentDialogOpen} onToggleEquipment={(e) => setSelectedEquipment(prev => prev.some(x => x.id === e.id) ? prev.filter(x => x.id !== e.id) : [...prev, e])} onContinue={proceedToCoach} />
       <CoachDialog coaches={coaches} selectedCoach={selectedCoach} open={coachDialogOpen} onOpenChange={setCoachDialogOpen} onSelectCoach={setSelectedCoach} onNext={handleNextStep} price={price} />
-      <ConfirmationDialog open={confirmationDialogOpen} onOpenChange={setConfirmationDialogOpen} court={selectedCourt} slot={selectedSlot} date={date} equipment={selectedEquipment} coach={selectedCoach} price={price} onConfirm={confirmBooking} />
+      
+      {/* ConfirmationDialog updated: remove onConfirm */}
+      <ConfirmationDialog
+        open={confirmationDialogOpen}
+        onOpenChange={setConfirmationDialogOpen}
+        court={selectedCourt}
+        slot={selectedSlot}
+        date={date}
+        equipment={selectedEquipment}
+        coach={selectedCoach}
+        price={price}
+        userId={dbUser?.id} // pass current user ID
+      />
     </>
   );
 }

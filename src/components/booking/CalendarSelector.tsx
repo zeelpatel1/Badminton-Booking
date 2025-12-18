@@ -13,8 +13,9 @@ export function CalendarSelector({ selectedDate, onSelectDate }: CalendarSelecto
     <Calendar
       mode="single"
       className="mx-auto border rounded-md"
-      selected={selectedDate}
+      selected={selectedDate || new Date()}
       onSelect={onSelectDate}
+      required={true}
     />
   );
 }
