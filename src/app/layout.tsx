@@ -26,9 +26,9 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
+      <SimpleHeader/>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <SimpleHeader />   {/* ✅ NAVBAR */}
           {children}
         </body>
       </html>

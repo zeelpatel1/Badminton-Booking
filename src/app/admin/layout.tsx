@@ -10,7 +10,7 @@ export default function AdminLayout({
   return (
     <ProtectedAdmin>
       <div className="min-h-screen">
-        <SimpleHeader role="Admin" />
+        
         <main className="p-6">{children}</main>
       </div>
     </ProtectedAdmin>

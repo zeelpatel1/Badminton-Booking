@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, MoreHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface Booking {
   id: string;
@@ -16,43 +15,17 @@ interface Booking {
 }
 
 interface BookingsTableProps {
+  bookings: Booking[];
+  loading?: boolean;
   limit?: number;
 }
 
-export function BookingsTable({ limit }: BookingsTableProps) {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchBookings() {
-      try {
-        const res = await fetch("/api/bookings"); // Your backend endpoint
-        if (!res.ok) throw new Error("Failed to fetch bookings");
-        const data = await res.json();
-        // Transform backend data if necessary
-        const transformed = data.map((b: any) => ({
-          id: b.id,
-          user: b.user.name || "Unknown User",
-          court: b.courtReservation?.court.name || "Court N/A",
-          date: new Date(b.startTime).toLocaleDateString(),
-          time: `${new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(b.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-          status: b.status,
-          amount: `$${b.totalPrice.toFixed(2)}`,
-        }));
-        setBookings(transformed);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchBookings();
-  }, []);
-
+export function BookingsTable({ bookings, loading = false, limit }: BookingsTableProps) {
   if (loading) return <div>Loading bookings...</div>;
 
   const displayBookings = limit ? bookings.slice(0, limit) : bookings;
+
+  if (displayBookings.length === 0) return <div>No bookings found.</div>;
 
   return (
     <div className="space-y-4">

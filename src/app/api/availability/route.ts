@@ -1,47 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { getAvailableCoaches, getAvailableCourts, getAvailableEquipment } from "@/helper";
 
 const querySchema = z.object({
-  date: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
+  date: z.string(),       // YYYY-MM-DD
+  startTime: z.string(),  // HH:mm
+  endTime: z.string(),    // HH:mm
+  courtId: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
+
     const parsed = querySchema.safeParse({
       date: searchParams.get("date"),
       startTime: searchParams.get("startTime"),
       endTime: searchParams.get("endTime"),
+      courtId: searchParams.get("courtId"),
     });
 
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid query params" }, { status: 400 });
     }
 
-    const { date, startTime, endTime } = parsed.data;
+    const { date, startTime, endTime, courtId } = parsed.data;
 
-    // ✅ Ensure proper date parsing
-    const start = new Date(`${date}T${startTime}:00`);
-    const end = new Date(`${date}T${endTime}:00`);
+    // ✅ Proper Date parsing
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return NextResponse.json({ error: "Invalid date or time format" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid date/time format" }, { status: 400 });
     }
 
-    const [courts, equipment, coaches] = await Promise.all([
-      getAvailableCourts(start, end),
-      getAvailableEquipment(start, end),
-      getAvailableCoaches(start, end),
-    ]);
+    // 1️⃣ Fetch all courts if no specific courtId
+    const allCourts = await prisma.court.findMany({
+      where: courtId ? { id: parseInt(courtId) } : {},
+    });
 
-    return NextResponse.json({ courts, equipment, coaches });
+    // 2️⃣ Get courts that are already booked at this slot
+    const bookedCourts = await prisma.courtReservation.findMany({
+      where: {
+        booking: {
+          startTime: { lt: end },
+          endTime: { gt: start },
+          status: "CONFIRMED",
+        },
+      },
+      select: { courtId: true },
+    });
+
+    const bookedCourtIds = bookedCourts.map((b) => b.courtId);
+
+    const availableCourts = allCourts.filter((c) => !bookedCourtIds.includes(c.id));
+
+    return NextResponse.json(availableCourts);
   } catch (err) {
-    console.error(err);
+    console.error("Availability error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

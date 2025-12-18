@@ -39,13 +39,14 @@ const Page = () => {
       <div className="mb-8 mt-10 text-center">
         <h2 className="text-4xl font-mono font-bold tracking-tight">Book Your Court</h2>
         <p className="mt-2 font-mono text-lg text-muted-foreground">
-          Welcome, {dbUser?.name || user?.firstName} ({dbUser?.email || user?.emailAddresses[0]?.emailAddress})
+          Welcome, {dbUser?.name || user?.firstName} 
         </p>
         <p className="mt-2 font-mono text-lg text-muted-foreground">
           Choose from 4 badminton courts, add equipment, and book a coach
         </p>
       </div>
-      <BookingFlow />
+      {/* Pass userId to BookingFlow */}
+      <BookingFlow userId={dbUser?.id} />
     </div>
   );
 };

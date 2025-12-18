@@ -25,3 +25,13 @@ export async function POST(req:NextRequest){
         return NextResponse.json({ error: "Failed to create equipment" }, { status: 500 });
     }
 }
+
+export async function GET(req:NextRequest){
+    try {
+        const equipment=await prisma.equipment.findMany();
+        return NextResponse.json({equipment})
+    } catch (error) {
+        console.log(error)
+        return NextResponse.json({ error: "Failed to fetch equipment" }, { status: 500 });
+    }
+}

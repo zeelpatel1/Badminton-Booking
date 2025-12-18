@@ -1,12 +1,18 @@
-import { CalendarDemo } from '@/component/Calendar'
-import React from 'react'
+"use client";
 
-const BookingFlow = () => {
+import React from "react";
+import { CalendarDemo } from "./Calendar";
+
+type BookingFlowProps = {
+  userId: number | undefined;
+};
+
+const BookingFlow: React.FC<BookingFlowProps> = ({ userId }) => {
   return (
     <div>
-        <CalendarDemo/>
+      <CalendarDemo userId={userId} />
     </div>
-  )
-}
+  );
+};
 
-export default BookingFlow
+export default BookingFlow;
