@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-
     const parsed = querySchema.safeParse({
       date: searchParams.get("date"),
       startTime: searchParams.get("startTime"),
